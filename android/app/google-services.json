@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "197753978654",
+    "project_id": "retail-ffbe6",
+    "storage_bucket": "retail-ffbe6.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:197753978654:android:cd39a1d604d7949618930f",
+        "android_client_info": {
+          "package_name": "com.retailpulse"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDqkUoB9Bxrukwl7rhPc8EoyEuWmlhLga4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
