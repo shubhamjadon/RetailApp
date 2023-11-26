@@ -1,43 +1,58 @@
-import {Pressable, StyleSheet, Text, View} from 'react-native';
-import React from 'react';
-import {StoreType} from '../Screens/Home';
+import {StyleSheet} from 'react-native';
+import React, {useState} from 'react';
+import {StoreType} from '../Constants/model';
+import CameraModal from './CameraModal';
+import {Button, Icon, ListItem} from '@ui-kitten/components';
 
 interface StoreListItemProps {
   store: StoreType;
   userId: string;
-  handleUpload: (item: StoreType, isUploadDone: boolean) => void;
 }
 
-const StoreListItem = ({store, userId, handleUpload}: StoreListItemProps) => {
-  const isUploadDone = store.store_visits?.find(obj => obj.userId === userId);
+const StoreListItem = ({store, userId}: StoreListItemProps) => {
+  const [isUploadDone, setIsUploadDone] = useState(
+    () => !!store.store_visits?.find(obj => obj.userId === userId),
+  );
+  const [showCamera, setShowCamera] = useState(false);
 
-  const handlePress = () => {
-    console.log(store);
+  const onUpload = () => {
+    setShowCamera(true);
   };
 
-  const onUpload = () => handleUpload(store, !!isUploadDone);
+  const renderItemAccessory = (): React.ReactElement => {
+    if (isUploadDone) {
+      return <Icon name="checkmark-circle-outline" style={styles.icon} />;
+    }
+    return (
+      <Button size="small" onPress={onUpload}>
+        Upload
+      </Button>
+    );
+  };
 
   return (
-    <Pressable
-      onPress={handlePress}
-      style={{
-        borderWidth: 1,
-        borderColor: 'red',
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        padding: 8,
-      }}>
-      <View>
-        <Text>{store.name}</Text>
-        <Text>{store.type}</Text>
-      </View>
-      <Pressable onPress={onUpload}>
-        <Text>{!isUploadDone ? 'Upload' : 'Site Visit Done'}</Text>
-      </Pressable>
-    </Pressable>
+    <>
+      <ListItem
+        title={store.name}
+        description={store.type}
+        accessoryRight={renderItemAccessory}
+      />
+      <CameraModal
+        visible={showCamera}
+        closeModal={() => setShowCamera(false)}
+        onUploadDone={() => setIsUploadDone(true)}
+        storeId={store.id}
+        userId={userId}
+      />
+    </>
   );
 };
 
 export default StoreListItem;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  icon: {
+    width: 24,
+    height: 24,
+  },
+});

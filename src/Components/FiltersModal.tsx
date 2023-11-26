@@ -1,6 +1,8 @@
 import {Modal, Pressable, StyleSheet, Text, View} from 'react-native';
-import React, {Dispatch, SetStateAction, useState} from 'react';
+import React, {Dispatch, SetStateAction, useEffect, useState} from 'react';
 import {FilterType, SelectedFilterType} from '../Constants/model';
+import Select from './Select';
+import {Button} from '@ui-kitten/components';
 
 interface FiltersModalProps {
   visible: boolean;
@@ -9,64 +11,99 @@ interface FiltersModalProps {
   setFilters: Dispatch<SetStateAction<SelectedFilterType[] | undefined>>;
 }
 
+interface SelectedFiltersType {
+  filterKey: string;
+  selectedIndex: number;
+}
+
 const FiltersModal = ({
   visible,
   closeModal,
   filtersArr,
   setFilters,
 }: FiltersModalProps) => {
-  if (!filtersArr?.length) {
-    return null;
-  }
+  const [selectedFilters, setSelectedFilters] = useState<SelectedFiltersType[]>(
+    [],
+  );
+
+  useEffect(() => {
+    const arr: any = [];
+    filtersArr.forEach(filterObj => {
+      arr.push({
+        filterKey: filterObj.filterKey,
+        selectedIndex: 0 as number,
+      });
+    });
+
+    setSelectedFilters(arr);
+  }, [filtersArr]);
 
   const handleSubmit = () => {
-    setFilters([
-      {
-        filter: 'area',
-        selectedOption: 'Koramangla',
-      },
-      {
-        filter: 'type',
-        selectedOption: 'General Store',
-      },
-      {
-        filter: 'route',
-        selectedOption: 'r4',
-      },
-    ]);
+    const selectedFiltersArr: any = [];
+    selectedFilters?.forEach((obj, index) => {
+      if (obj.selectedIndex) {
+        selectedFiltersArr.push({
+          filter: obj.filterKey,
+          selectedOption:
+            filtersArr[index].filterOptions[obj.selectedIndex - 1],
+        });
+      }
+    });
+    setFilters(selectedFiltersArr);
   };
 
   const handleReset = () => {
     setFilters(undefined);
+
+    const arr: any = [];
+    filtersArr.forEach(filterObj => {
+      arr.push({
+        filterKey: filterObj.filterKey,
+        selectedIndex: 0 as number,
+      });
+    });
+
+    setSelectedFilters(arr);
   };
+
+  const changeSelectedFilters = (index: number, selectedIndex: number) => {
+    const newArr = [...selectedFilters];
+    newArr[index].selectedIndex = selectedIndex;
+
+    setSelectedFilters(newArr);
+  };
+
+  if (!selectedFilters?.length) {
+    return null;
+  }
 
   return (
     <View style={styles.container}>
       <Modal
-        animationType="slide"
+        animationType="fade"
         transparent={true}
         visible={visible}
         onRequestClose={closeModal}>
         <Pressable style={styles.container} onPress={closeModal}>
           <Pressable style={styles.modalView}>
-            {filtersArr.map(filterObj => (
-              <View key={filterObj.filterKey}>
-                <Text>{filterObj.filterLabel}</Text>
-              </View>
+            {filtersArr.map((filterObj, index) => (
+              <Select
+                key={filterObj.filterKey}
+                label={filterObj.filterLabel}
+                options={['Select', ...filterObj.filterOptions]}
+                selectedIndex={selectedFilters[index].selectedIndex}
+                setSelectedIndex={newIndex =>
+                  changeSelectedFilters(index, newIndex)
+                }
+              />
             ))}
             <View style={styles.buttonContainer}>
-              <Pressable
-                style={[styles.button, styles.cancelButton]}
-                onPress={handleReset}>
-                <Text style={styles.buttonText}>Reset</Text>
-              </Pressable>
-              <Pressable
-                style={[styles.button, styles.submitButton]}
-                onPress={handleSubmit}>
-                <Text style={[styles.buttonText, styles.submitButtonText]}>
-                  Submit
-                </Text>
-              </Pressable>
+              <Button appearance="ghost" onPress={handleReset}>
+                Reset
+              </Button>
+              <Button appearance="filled" onPress={handleSubmit}>
+                Submit
+              </Button>
             </View>
           </Pressable>
         </Pressable>
@@ -80,6 +117,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalView: {
     backgroundColor: 'white',
@@ -90,22 +128,5 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-  },
-  button: {
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-  },
-  buttonText: {
-    fontWeight: '600',
-  },
-  submitButtonText: {
-    color: '#fff',
-  },
-  cancelButton: {
-    backgroundColor: 'white',
-  },
-  submitButton: {
-    backgroundColor: 'blue',
   },
 });

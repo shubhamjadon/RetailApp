@@ -1,17 +1,19 @@
-import {
-  FlatList,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import {Pressable, StyleSheet, Text, View} from 'react-native';
 import React, {useEffect, useState} from 'react';
 import StoreListItem from '../Components/StoreListItem';
 import {FilterType, SelectedFilterType, StoreType} from '../Constants/model';
 import {useLogin} from '../Providers/LoginProvider';
 import {useDBService} from '../Utils/DBService';
 import FiltersModal from '../Components/FiltersModal';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import {
+  Icon,
+  IconElement,
+  Input,
+  List,
+  TopNavigation,
+  TopNavigationAction,
+} from '@ui-kitten/components';
 
 const Home = () => {
   const {userData, logout} = useLogin();
@@ -22,7 +24,7 @@ const Home = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<SelectedFilterType[] | undefined>();
 
-  const userId = userData!.uid;
+  const userId = userData?.uid;
 
   const fetchStoresData = async () => {
     const userDetails = await db.getUserData(userId);
@@ -63,45 +65,60 @@ const Home = () => {
 
   const handleShowFilters = () => setShowFilters(true);
 
-  const handleLogout = () => logout();
+  const renderLogoutAction = (): React.ReactElement => (
+    <TopNavigationAction icon={LogoutIcon} onPress={logout} />
+  );
 
   return (
-    <View style={styles.container}>
-      <View style={styles.row}>
-        <Text>Home</Text>
-        <Pressable onPress={handleLogout}>
-          <Text>Logout</Text>
-        </Pressable>
+    <SafeAreaView style={styles.container}>
+      <TopNavigation title="Home" accessoryRight={renderLogoutAction} />
+      <View style={styles.contentContainer}>
+        <View style={styles.row}>
+          <Input
+            style={styles.flex1}
+            placeholder="Search store..."
+            onChangeText={setSearchString}
+          />
+          <Pressable onPress={handleShowFilters}>
+            <Icon name="options-2-outline" style={styles.filterIcon} />
+          </Pressable>
+        </View>
+        {!storesList?.length && <Text>Loading</Text>}
+        <List
+          // style={styles.container}
+          data={storesList}
+          renderItem={({item}) => (
+            <StoreListItem store={item} userId={userId} />
+          )}
+        />
       </View>
-      <TextInput onChangeText={setSearchString} placeholder="Search" />
-      <Pressable onPress={handleShowFilters}>
-        <Text>Filters</Text>
-      </Pressable>
-      <FlatList
-        data={storesList}
-        renderItem={({item}) => (
-          <StoreListItem store={item} userId={userId} handleUpload={() => {}} />
-        )}
-        keyExtractor={item => item.id}
-      />
       <FiltersModal
         visible={showFilters}
         closeModal={() => setShowFilters(false)}
         filtersArr={filtersArr}
         setFilters={setFilters}
       />
-    </View>
+    </SafeAreaView>
   );
 };
+
+const LogoutIcon = (props): IconElement => (
+  <Icon {...props} name="power-outline" />
+);
 
 export default Home;
 
 const styles = StyleSheet.create({
-  container: {
+  container: {},
+  contentContainer: {
     padding: 16,
   },
   row: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingBottom: 16,
   },
+  flex1: {flex: 1},
+  button: {},
+  filterIcon: {width: 24, height: 24, marginLeft: 8},
 });

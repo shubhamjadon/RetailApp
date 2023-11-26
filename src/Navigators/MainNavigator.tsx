@@ -14,7 +14,9 @@ const MainNavigator = () => {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName={initialRouteName}>
+      <Stack.Navigator
+        initialRouteName={initialRouteName}
+        screenOptions={{headerShown: false}}>
         {isLoggedIn ? (
           <Stack.Screen name={routes.Home} component={Home} />
         ) : (

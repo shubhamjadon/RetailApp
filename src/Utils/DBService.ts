@@ -1,11 +1,12 @@
 import firestore from '@react-native-firebase/firestore';
+import {useRef} from 'react';
+import storage from '@react-native-firebase/storage';
 import {
   FilterType,
   SelectedFilterType,
   StoreType,
   UserInfoType,
 } from '../Constants/model';
-import {useRef} from 'react';
 
 class DBService {
   #UsersCollection = firestore().collection('usersTemp');
@@ -46,6 +47,34 @@ class DBService {
     this.#filterTypesList = filterTypesArr;
 
     return filterTypesArr;
+  }
+
+  async updateStore(imageUri: string, storeId: string, userId: string) {
+    const storeData = (await this.#StoresCollection.doc(storeId).get()).data();
+    const newData = {
+      userId: userId,
+      images: [imageUri],
+      visitTime: [new Date().toISOString()],
+    };
+    if (storeData) {
+      if (storeData?.store_visits?.length) {
+        storeData.store_visits.push(newData);
+      } else {
+        storeData.store_visits = [newData];
+      }
+      await this.#StoresCollection
+        .doc(storeId)
+        .update({store_visits: storeData.store_visits});
+    }
+  }
+
+  async uploadImage(localImageUri: string, storeId: string, userId: string) {
+    const reference = storage().ref(`${userId}/${storeId}/1.jpg`);
+    await reference.putFile(localImageUri);
+
+    const downloadUrl = await reference.getDownloadURL();
+
+    await this.updateStore(downloadUrl, storeId, userId);
   }
 
   searchStore(searchString: string) {

@@ -23,7 +23,7 @@ export interface StoreType {
 export interface FilterType {
   filterLabel: string;
   filterKey: string;
-  filterOption: string[];
+  filterOptions: string[];
 }
 
 export interface SelectedFilterType {
